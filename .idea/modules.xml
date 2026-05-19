@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Mcintyre-Video-Generator.iml" filepath="$PROJECT_DIR$/.idea/Mcintyre-Video-Generator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Backend/mcintyre-lab/mcintyre-lab.iml" filepath="$PROJECT_DIR$/Backend/mcintyre-lab/mcintyre-lab.iml" />
     </modules>
   </component>
 </project>

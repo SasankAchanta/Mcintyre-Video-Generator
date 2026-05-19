@@ -1,6 +1,5 @@
 package org.mcintyrelab.controller;
 
-import org.mcintyrelab.dto.CreateUser;
 import org.mcintyrelab.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,9 +15,4 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity <String> createUser(@RequestBody CreateUser createUser) {
-        userService.createUser(createUser);
-        return ResponseEntity.ok("User created successfully");
-    }
 }
