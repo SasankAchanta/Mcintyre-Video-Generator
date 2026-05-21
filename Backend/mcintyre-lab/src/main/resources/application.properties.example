@@ -1,0 +1,15 @@
+# Database
+spring.datasource.url=your-db-url
+spring.datasource.username=your-username
+spring.datasource.password=your-password
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# JWT
+jwt.secret=your-secret-here
+jwt.expiration=86400000
+
+# Server
+server.port=8080

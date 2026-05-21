@@ -1,4 +1,4 @@
-package org.mcintyrelab.dto.auth;
+package org.mcintyrelab.dto.auth.request;
 
 import jakarta.validation.constraints.NotBlank;
 

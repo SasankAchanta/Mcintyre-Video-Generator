@@ -1,7 +1,6 @@
 package org.mcintyrelab.security;
 
-import org.mcintyrelab.service.CustomUserDetailsService;
-import org.mcintyrelab.service.UserService;
+import org.mcintyrelab.service.impl.CustomUserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,22 +15,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 public class WebSecurityConfig {
-    private final UserService userService;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final JwtUtil jwtUtil;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsServiceImpl customUserDetailsServiceImpl;
 
-    public WebSecurityConfig(UserService userService, AuthEntryPointJwt unauthorizedHandler, JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
-        this.userService = userService;
+    public WebSecurityConfig(AuthEntryPointJwt unauthorizedHandler, JwtUtil jwtUtil, CustomUserDetailsServiceImpl customUserDetailsServiceImpl) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtUtil = jwtUtil;
-        this.customUserDetailsService = customUserDetailsService;
+        this.customUserDetailsServiceImpl = customUserDetailsServiceImpl;
     }
 
     // creates our JWT filter bean so Spring can inject it
     @Bean
     public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter(jwtUtil, customUserDetailsService);
+        return new AuthTokenFilter(jwtUtil, customUserDetailsServiceImpl);
     }
 
     // Spring Security uses this to authenticate username/password during login

@@ -2,7 +2,7 @@ package org.mcintyrelab.controller;
 
 import org.mcintyrelab.dto.CreateUntrainedRequest;
 import org.mcintyrelab.dto.UntrainedResponse;
-import org.mcintyrelab.service.UntrainedService;
+import org.mcintyrelab.service.impl.UntrainedService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

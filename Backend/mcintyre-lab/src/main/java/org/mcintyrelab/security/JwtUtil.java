@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.UUID;
 
 @Configuration
 @Slf4j
@@ -39,7 +38,7 @@ public class JwtUtil {
                 .compact();                 // combines it all into the final token string
     }
 
-    public String getUserIdFromToken(String token) {
+    public String getUsernameFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)  // tell the parser what key was used to sign the token
                 .build()                   // create the parser

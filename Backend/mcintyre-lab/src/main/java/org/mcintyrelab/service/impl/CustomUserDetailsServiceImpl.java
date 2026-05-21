@@ -1,19 +1,20 @@
-package org.mcintyrelab.service;
+package org.mcintyrelab.service.impl;
 
 import org.mcintyrelab.model.User;
 import org.mcintyrelab.repository.UserRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.List;
 
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -28,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),   // username
                 user.getPassword(),   // password Spring Security will verify
-                Collections.emptyList()  // roles/authorities (empty for now)
+                List.of(new SimpleGrantedAuthority(user.getRole().name())) //  Specific role for user
         );
     }
 }
