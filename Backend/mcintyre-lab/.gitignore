@@ -32,4 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-application.properties
+Backend/mcintyre-lab/src/main/resources/application.properties
