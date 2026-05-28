@@ -66,6 +66,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(a -> a
                         // allow anyone to hit auth endpoints (login, register)
                         .requestMatchers("/mcintyre-lab/v1/auth/**").permitAll()
+                        // 🚀 ADD THIS LINE to explicitly open up your test controller path
+                        .requestMatchers("/api/test/**").permitAll()
                         // everything else requires a valid JWT token
                         .anyRequest().authenticated()
                 )

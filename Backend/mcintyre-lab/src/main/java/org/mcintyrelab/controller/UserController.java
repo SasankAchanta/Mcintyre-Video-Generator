@@ -1,13 +1,9 @@
 package org.mcintyrelab.controller;
 
 import org.mcintyrelab.dto.user.UserDto;
-import org.mcintyrelab.dto.user.request.AllUsersRequest;
-import org.mcintyrelab.dto.user.request.PasswordUpdateRequest;
-import org.mcintyrelab.dto.user.request.UsernameUpdateRequest;
-import org.mcintyrelab.dto.user.response.AllUsersResponse;
-import org.mcintyrelab.dto.user.response.PasswordUpdateResponse;
-import org.mcintyrelab.dto.user.response.UsernameUpdateResponse;
-import org.mcintyrelab.service.impl.UserServiceImpl;
+import org.mcintyrelab.dto.user.request.*;
+import org.mcintyrelab.dto.user.response.*;
+import org.mcintyrelab.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,30 +15,51 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/mcintyre-lab/v1")
+@CrossOrigin
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
 
-    public UserController(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PreAuthorize("hasAnyRole('RESEARCHER', 'ADMIN', 'TECH')")
-    @PostMapping("/user/update/password")
+    @PatchMapping("/user/update/password")
     public ResponseEntity<PasswordUpdateResponse> updatePassword(@RequestBody PasswordUpdateRequest passwordUpdateRequest, @AuthenticationPrincipal UserDetails userDetails) {
         // JWT Token has been checked and it's valid
         String username = userDetails.getUsername();
-        userServiceImpl.updatePassword(username, passwordUpdateRequest);
+        userService.updatePassword(username, passwordUpdateRequest);
         return ResponseEntity.ok(new PasswordUpdateResponse("Password updated successfully"));
     }
 
     @PreAuthorize("hasRole('TECH')")
-    @PostMapping("/tech/update/username")
+    @PatchMapping("/tech/update/username")
     public ResponseEntity<UsernameUpdateResponse> updateUsername(@RequestBody UsernameUpdateRequest usernameUpdateRequest, @AuthenticationPrincipal UserDetails actorDetails) {
         // JWT Token has been checked and it's valid
         String actorUsername = actorDetails.getUsername();
-        userServiceImpl.updateUsername(actorUsername, usernameUpdateRequest);
+        userService.updateUsername(actorUsername, usernameUpdateRequest);
         return ResponseEntity.ok(new UsernameUpdateResponse("Username updated successfully"));
     }
+
+    @PreAuthorize("hasRole('TECH')")
+    @PatchMapping("/tech/update/role")
+    public ResponseEntity<RoleUpdateResponse> updateRole(@RequestBody RoleUpdateRequest roleUpdateRequest, @AuthenticationPrincipal UserDetails actorDetails) {
+        // JWT Token has been checked and it's valid
+        String actorUsername = actorDetails.getUsername();
+        userService.updateRole(actorUsername, roleUpdateRequest);
+        return ResponseEntity.ok(new RoleUpdateResponse("Role updated successfully"));
+    }
+
+    @PreAuthorize("hasRole('TECH')")
+    @PatchMapping("/tech/update/name")
+    public ResponseEntity<NameUpdateResponse> updateName(@RequestBody NameUpdateRequest nameUpdateRequest, @AuthenticationPrincipal UserDetails actorDetails) {
+        // JWT Token has been checked and it's valid
+        String actorUsername = actorDetails.getUsername();
+        userService.updateName(actorUsername, nameUpdateRequest);
+        return ResponseEntity.ok(new NameUpdateResponse("Name updated successfully"));
+    }
+
+    //public ResponseEntity
 
     @PreAuthorize("hasAnyRole('RESEARCHER', 'ADMIN', 'TECH')")
     @GetMapping("/user/all")
@@ -53,12 +70,8 @@ public class UserController {
                                                                 sort = {"lastName", "firstName"},
                                                                 direction = org.springframework.data.domain.Sort.Direction.ASC
                                                         ) Pageable pageable) {
-        Page<UserDto> userPage = userServiceImpl.getAllUsers(allUsersRequest, pageable);
+        Page<UserDto> userPage = userService.getAllUsers(allUsersRequest, pageable);
         AllUsersResponse allUsersResponse = new AllUsersResponse(userPage);
         return ResponseEntity.ok(allUsersResponse);
     }
-
-
-
-
 }

@@ -16,7 +16,7 @@ public record AllUsersResponse(
     public AllUsersResponse(Page<UserDto> userPage) {
         this(
                 userPage.getContent(),      // The list of 20 users for the current page
-                userPage.getNumber(),       // e.g., Page 0 (Spring is 0-indexed)
+                userPage.getNumber() + 1, // OPTIONAL FIX: Converts 0-indexed to 1-indexed for your UI                userPage.getTotalPages(),   // e.g., 5 total pages exist
                 userPage.getTotalPages(),   // e.g., 5 total pages exist
                 userPage.getTotalElements() // e.g., 98 total matching users in the database
         );

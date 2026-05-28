@@ -1,9 +1,7 @@
 package org.mcintyrelab.service.impl;
 
 import org.mcintyrelab.dto.user.UserDto;
-import org.mcintyrelab.dto.user.request.AllUsersRequest;
-import org.mcintyrelab.dto.user.request.PasswordUpdateRequest;
-import org.mcintyrelab.dto.user.request.UsernameUpdateRequest;
+import org.mcintyrelab.dto.user.request.*;
 import org.mcintyrelab.model.User;
 import org.mcintyrelab.model.enums.AuditAction;
 import org.mcintyrelab.repository.UserRepository;
@@ -41,6 +39,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Current password is incorrect");
         }
 
+        // ensure current and new password are not the same
+        if (passwordEncoder.matches(passwordUpdateRequest.newPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password and new password cannot be the same");
+        }
+
         // Update your compliance tracking timestamp!
         user.setLastPasswordChangeAt(LocalDateTime.now());
 
@@ -54,7 +57,7 @@ public class UserServiceImpl implements UserService {
         User targetUser = userRepository.findById(usernameUpdateRequest.targetUserId())
                 .orElseThrow(() -> new RuntimeException("Target user not found"));
 
-        User actorUser = userRepository.findByUsername(techUsername).orElseThrow(() -> new RuntimeException("Tech user not found"));
+        User actorUser = userRepository.findByUsername(techUsername).orElseThrow(() -> new RuntimeException("Actor user not found"));
 
         String structuralChange = String.format("Changed username from '%s' to '%s'.", targetUser.getUsername(), usernameUpdateRequest.newUsername());
 
@@ -67,8 +70,28 @@ public class UserServiceImpl implements UserService {
                 ? structuralChange + " Reason provided: " + usernameUpdateRequest.reason()
                 : structuralChange;
 
-        // Logged
+        // Log it
         auditServiceImpl.logAction(AuditAction.USERNAME_UPDATE, actorUser, targetUser, finalDescription);
+    }
+
+    @Override
+    public void updateRole(String actorUsername, RoleUpdateRequest roleUpdateRequest) {
+        User targetUser = userRepository.findById(roleUpdateRequest.targetUserId()).orElseThrow(() -> new RuntimeException("Target user not found"));
+        User actorUser = userRepository.findByUsername(actorUsername).orElseThrow(() -> new RuntimeException("Actor user not found"));
+
+        String structuralChange = String.format("Changed role from '%s' to '%s'.", targetUser.getRole(), roleUpdateRequest.newRole());
+
+        // Change the role
+        targetUser.setRole(roleUpdateRequest.newRole());
+        userRepository.save(targetUser);
+
+        // If they provided a reason, tack it onto the end of the description
+        String finalDescription = roleUpdateRequest.reason() != null && !roleUpdateRequest.reason().isBlank()
+                ? structuralChange + " Reason provided: " + roleUpdateRequest.reason()
+                : structuralChange;
+
+        // Log it
+        auditServiceImpl.logAction(AuditAction.ROLE_UPDATE, actorUser, targetUser, finalDescription);
     }
 
     @Override
@@ -89,5 +112,53 @@ public class UserServiceImpl implements UserService {
                 pageable
         );
         return users.map(user -> new UserDto(user.getFirstName(), user.getLastName(), user.getProfilePicture(), user.getEmail(), user.getRole(), YearMonth.from(user.getCreatedAt())));
+    }
+
+    @Override
+    @Transactional
+    public void updateName(String actorUsername, NameUpdateRequest nameUpdateRequest) {
+        User targetUser = userRepository.findById(nameUpdateRequest.targetUserId())
+                .orElseThrow(() -> new RuntimeException("Target user not found"));
+        User actorUser = userRepository.findByUsername(actorUsername)
+                .orElseThrow(() -> new RuntimeException("Actor user not found"));
+
+        // 1. Capture the original name BEFORE modifying the object
+        String originalFullName = targetUser.getFirstName() + " " + targetUser.getLastName();
+
+        // 2. Clean up input and split safely by spaces
+        String cleanedName = nameUpdateRequest.newName().trim();
+        String[] nameParts = cleanedName.split("\\s+", 2);
+
+        String newFirstname = nameParts[0];
+        String newLastname = (nameParts.length > 1) ? nameParts[1] : "";
+
+        boolean firstNameChanged = !newFirstname.equals(targetUser.getFirstName());
+        boolean lastNameChanged = !newLastname.equals(targetUser.getLastName());
+
+        // 3. Only execute database writes and logs if an actual change occurred
+        if (firstNameChanged || lastNameChanged) {
+
+            if (!newFirstname.isEmpty() && firstNameChanged) {
+                targetUser.setFirstName(newFirstname);
+            }
+            if (!newLastname.isEmpty() && lastNameChanged) {
+                targetUser.setLastName(newLastname);
+            }
+
+            // Save the updates to the database (only once!)
+            userRepository.save(targetUser);
+
+            // 4. Build description strings inside this scope where they belong
+            String structuralChange = String.format("Changed name from '%s' to '%s'.", originalFullName, cleanedName);
+
+            // 5. Append reason if provided
+            String finalDescription = nameUpdateRequest.reason() != null && !nameUpdateRequest.reason().isBlank()
+                    ? structuralChange + " Reason provided: " + nameUpdateRequest.reason()
+                    : structuralChange;
+
+            // 6. Log it
+            auditServiceImpl.logAction(AuditAction.NAME_UPDATE, actorUser, targetUser, finalDescription);
+        }
+        // If nothing changed, the method reaches the end here and exits cleanly!
     }
 }
