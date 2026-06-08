@@ -2,6 +2,7 @@ package org.mcintyrelab.service.impl;
 
 import org.mcintyrelab.dto.user.UserDto;
 import org.mcintyrelab.dto.user.request.*;
+import org.mcintyrelab.exception.badrequest.UserNotFoundException;
 import org.mcintyrelab.model.User;
 import org.mcintyrelab.model.enums.AuditAction;
 import org.mcintyrelab.repository.UserRepository;
@@ -32,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updatePassword(String username, PasswordUpdateRequest passwordUpdateRequest) {
         // load user from DB
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
 
         // verify current password is correct
         if (!passwordEncoder.matches(passwordUpdateRequest.currentPassword(), user.getPassword())) {
@@ -53,11 +54,11 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void updateUsername(String techUsername, UsernameUpdateRequest usernameUpdateRequest) {
+    public void updateUsername(String actorUsername, UsernameUpdateRequest usernameUpdateRequest) {
         User targetUser = userRepository.findById(usernameUpdateRequest.targetUserId())
-                .orElseThrow(() -> new RuntimeException("Target user not found"));
+                .orElseThrow(() -> new UserNotFoundException(usernameUpdateRequest.targetUserId().toString()));
 
-        User actorUser = userRepository.findByUsername(techUsername).orElseThrow(() -> new RuntimeException("Actor user not found"));
+        User actorUser = userRepository.findByUsername(actorUsername).orElseThrow(() -> new UserNotFoundException(actorUsername));
 
         String structuralChange = String.format("Changed username from '%s' to '%s'.", targetUser.getUsername(), usernameUpdateRequest.newUsername());
 
@@ -76,8 +77,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateRole(String actorUsername, RoleUpdateRequest roleUpdateRequest) {
-        User targetUser = userRepository.findById(roleUpdateRequest.targetUserId()).orElseThrow(() -> new RuntimeException("Target user not found"));
-        User actorUser = userRepository.findByUsername(actorUsername).orElseThrow(() -> new RuntimeException("Actor user not found"));
+        User targetUser = userRepository.findById(roleUpdateRequest.targetUserId()).orElseThrow(() -> new UserNotFoundException(roleUpdateRequest.targetUserId().toString()));
+        User actorUser = userRepository.findByUsername(actorUsername).orElseThrow(() -> new UserNotFoundException(actorUsername));
 
         String structuralChange = String.format("Changed role from '%s' to '%s'.", targetUser.getRole(), roleUpdateRequest.newRole());
 
@@ -118,9 +119,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateName(String actorUsername, NameUpdateRequest nameUpdateRequest) {
         User targetUser = userRepository.findById(nameUpdateRequest.targetUserId())
-                .orElseThrow(() -> new RuntimeException("Target user not found"));
+                .orElseThrow(() -> new UserNotFoundException(nameUpdateRequest.targetUserId().toString()));
         User actorUser = userRepository.findByUsername(actorUsername)
-                .orElseThrow(() -> new RuntimeException("Actor user not found"));
+                .orElseThrow(() -> new RuntimeException(actorUsername));
 
         // 1. Capture the original name BEFORE modifying the object
         String originalFullName = targetUser.getFirstName() + " " + targetUser.getLastName();

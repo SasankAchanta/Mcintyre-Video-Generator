@@ -5,6 +5,7 @@ import org.mcintyrelab.dto.auth.request.VerifyEmailRequest;
 import org.mcintyrelab.dto.auth.response.LoginResponse;
 import org.mcintyrelab.dto.auth.request.RegisterRequest;
 import org.mcintyrelab.dto.auth.response.RegisterResponse;
+import org.mcintyrelab.exception.badrequest.UserNotFoundException;
 import org.mcintyrelab.model.enums.Role;
 import org.mcintyrelab.model.User;
 import org.mcintyrelab.repository.UserRepository;
@@ -87,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void resendVerificationCode(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+                .orElseThrow(() -> new UserNotFoundException(email));
 
         if (user.isVerified()) {
             throw new RuntimeException("This account is already verified. Please log in.");
@@ -99,10 +100,10 @@ public class AuthServiceImpl implements AuthService {
 
     // LOGIN GUARD FLOW
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest loginRequest) {
         // Look up the user first to check their verified status
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElseThrow(() -> new UserNotFoundException(loginRequest.username()));
 
         // Guard: Block them instantly if they haven't verified their email yet
         if (!user.isVerified()) {
@@ -112,8 +113,8 @@ public class AuthServiceImpl implements AuthService {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
+                        loginRequest.username(),
+                        loginRequest.password()
                 )
         );
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -125,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public Boolean checkVerificationCode(VerifyEmailRequest verifyEmailRequest) {
         User user = userRepository.findByEmail(verifyEmailRequest.email())
-                .orElseThrow(() -> new RuntimeException("User not found with this email: " + verifyEmailRequest.email()));
+                .orElseThrow(() -> new UserNotFoundException(verifyEmailRequest.email()));
 
         // 2. If already verified, don't re-process
         if (user.isVerified()) {

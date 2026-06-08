@@ -59,8 +59,6 @@ public class UserController {
         return ResponseEntity.ok(new NameUpdateResponse("Name updated successfully"));
     }
 
-    //public ResponseEntity
-
     @PreAuthorize("hasAnyRole('RESEARCHER', 'ADMIN', 'TECH')")
     @GetMapping("/user/all")
     public ResponseEntity<AllUsersResponse> getAllUsers(@ModelAttribute AllUsersRequest allUsersRequest,
