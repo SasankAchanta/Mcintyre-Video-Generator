@@ -1,0 +1,17 @@
+.runtime/
+.venv/
+generated-videos/
+__pycache__/
+
+# Local training inputs and derived artifacts are not deployment assets.
+/AIMD Mcyntyre DLC Model/labeled-data/
+/AIMD Mcyntyre DLC Model/training-datasets/
+/AIMD Mcyntyre DLC Model/videos/
+/AIMD Mcyntyre DLC Model/evaluation-results-pytorch/
+/AIMD Mcyntyre DLC Model/exported-models-pytorch/
+/AIMD Mcyntyre DLC Model/dlc-models/
+
+# Deploy only the best trained checkpoint and its PyTorch configuration.
+/AIMD Mcyntyre DLC Model/dlc-models-pytorch/**/train/*
+!/AIMD Mcyntyre DLC Model/dlc-models-pytorch/**/train/pytorch_config.yaml
+!/AIMD Mcyntyre DLC Model/dlc-models-pytorch/**/train/snapshot-best-020.pt

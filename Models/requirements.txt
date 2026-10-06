@@ -1,0 +1,4 @@
+# PyTorch project: no GUI or TensorFlow extras required.
+deeplabcut==3.0.2
+PyYAML>=6.0,<7
+imageio-ffmpeg==0.6.0
